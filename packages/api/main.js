@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express()
 const port = 3001
-const countersRouter = require('./controllers/counters');
+const countersRouter = require('./routers/counters');
 
 app.use("/counters", countersRouter);
 

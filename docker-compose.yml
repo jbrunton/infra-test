@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  api:
+    image: "jbrunton/infra-test_api:${TAG?}"
+    build:
+      context: ./packages/api
+    ports:
+      - "3001:3001"

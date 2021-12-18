@@ -1,6 +1,6 @@
 // Update with your config settings.
 
-const config = {
+const baseConfig = {
   client: 'postgresql',
   connection: {
     host : 'localhost',
@@ -16,5 +16,13 @@ const config = {
 };
 
 module.exports = {
-  development: config,
+  development: baseConfig,
+  production: {
+    ...baseConfig,
+    connection: {
+      ...baseConfig.connection,
+      host: 'postgres',
+      post: 5678,
+    },
+  },
 };

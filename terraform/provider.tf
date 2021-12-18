@@ -14,6 +14,6 @@ provider "digitalocean" {
   token = var.do_token
 }
 
-data "digitalocean_ssh_key" "terraform" {
-  name = "Converge-MacBook-2020"
+data "digitalocean_ssh_key" "converge-macbook-2020-id_ed25519" {
+  name = "converge-macbook-2020-id_ed25519"
 }

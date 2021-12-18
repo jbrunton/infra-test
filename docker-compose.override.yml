@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  api:
+    image: "infra-test_api"
+
+  postgres:
+    image: 'postgres:13'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=infra_test
+    ports:
+      - "${POSTGRES_LOCAL_PORT:-5432}:5432"

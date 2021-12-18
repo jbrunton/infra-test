@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import { useState, useEffect } from "react";
 
@@ -20,24 +19,37 @@ const resetCounter = async (sessionId) => {
   return await getCounter(sessionId);
 }
 
-function App() {
-  const [sessionId] = useState(newSessionId());
+const useCounter = (sessionId) => {
   const [count, setCount] = useState(0);
-  
-  useEffect(async () => {
+
+  const load = async () => {
     const counter = await getCounter(sessionId);
     setCount(counter.count);
-  });
+  }
 
-  const incrementCounterClicked = async () => {
+  const increment = async () => {
     const counter = await incrementCounter(sessionId);
     setCount(counter.count);
-  };
+  }
 
-  const resetCounterClicked = async () => {
+  const reset = async () => {
     const counter = await resetCounter(sessionId);
     setCount(counter.count);
+  }
+
+  return {
+    count,
+    load,
+    increment,
+    reset,
   };
+};
+
+function App() {
+  const [sessionId] = useState(newSessionId());
+  const { count, load, increment, reset } = useCounter(sessionId);
+  
+  useEffect(load);
   
   return (
     <div className="App">
@@ -51,14 +63,14 @@ function App() {
         <a
           className="App-link"
           href="#"
-          onClick={incrementCounterClicked}
+          onClick={increment}
         >
           Increment
         </a>
         <a
           className="App-link"
           href="#"
-          onClick={resetCounterClicked}
+          onClick={reset}
         >
           Reset
         </a>

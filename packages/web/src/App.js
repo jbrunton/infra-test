@@ -3,19 +3,21 @@ import { useState, useEffect } from "react";
 
 const newSessionId = () => (Math.random() + 1).toString(36).substring(7);
 
+const apiAddress = process.env.REACT_APP_API_ADDRESS;
+
 const getCounter = async (sessionId) => {
-  const response = await fetch(`http://localhost:3001/counters/${sessionId}`);
+  const response = await fetch(`${apiAddress}/counters/${sessionId}`);
   const counter = await response.json();
   return counter;
 }
 
 const incrementCounter = async (sessionId) => {
-  await fetch(`http://localhost:3001/counters/${sessionId}/increment`, { method: "PUT" });
+  await fetch(`${apiAddress}/counters/${sessionId}/increment`, { method: "PUT" });
   return await getCounter(sessionId);
 }
 
 const resetCounter = async (sessionId) => {
-  await fetch(`http://localhost:3001/counters/${sessionId}`, { method: "DELETE" });
+  await fetch(`${apiAddress}/counters/${sessionId}`, { method: "DELETE" });
   return await getCounter(sessionId);
 }
 

@@ -7,3 +7,10 @@ services:
       context: ./packages/api
     ports:
       - "3001:3001"
+
+  web:
+    image: "jbrunton/infra-test_web:${TAG?}"
+    build:
+      context: ./packages/web
+    ports:
+      - "3000:3000"

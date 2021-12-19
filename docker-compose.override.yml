@@ -4,6 +4,9 @@ services:
   api:
     image: "infra-test_api"
 
+  web:
+    image: "infra-test_web"
+
   postgres:
     image: 'postgres:13'
     environment:

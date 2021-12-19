@@ -12,5 +12,23 @@ services:
     image: "jbrunton/infra-test_web:${TAG?}"
     build:
       context: ./packages/web
+      args:
+        - REACT_APP_API_ADDRESS=http://localhost/api
     ports:
       - "3000:3000"
+
+  nginx:
+    image: "jbrunton/infra-test_nginx:${TAG?}"
+    build:
+      context: ./nginx
+    ports:
+      - 80:80
+
+  postgres:
+    image: 'postgres:13'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=infra_test
+    ports:
+      - "$POSTGRES_LOCAL_PORT:5432"

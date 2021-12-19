@@ -6,12 +6,12 @@ services:
 
   web:
     image: "infra-test_web"
+    build:
+      args:
+        - REACT_APP_API_ADDRESS=http://localhost:$NGINX_LOCAL_PORT/api
 
-  postgres:
-    image: 'postgres:13'
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=infra_test
+  nginx:
+    image: 'infra-test_nginx'
     ports:
-      - "${POSTGRES_LOCAL_PORT:-5432}:5432"
+      - "$NGINX_LOCAL_PORT:80"
+  

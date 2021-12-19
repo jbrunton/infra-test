@@ -1,0 +1,22 @@
+name: build
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+    env:
+      COMPOSE_FILE: docker-compose.yml
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Docker Login
+        run: echo "$DOCKER_ACCESS_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - name: Docker Build
+        run: docker compose build
+      - name: Docker Push
+        run: docker compose push

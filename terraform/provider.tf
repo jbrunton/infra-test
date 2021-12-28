@@ -19,8 +19,8 @@ provider "digitalocean" {
   token = var.do_token
 }
 
-data "digitalocean_ssh_key" "converge-macbook-2020-id_ed25519" {
-  name = "converge-macbook-2020-id_ed25519"
+data "digitalocean_ssh_key" "macbook-2020-id_ed25519" {
+  name = "macbook-2020-id_ed25519"
 }
 
 provider "aws" {

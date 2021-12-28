@@ -5,7 +5,7 @@ resource "digitalocean_droplet" "test-droplet" {
     size = "s-1vcpu-1gb"
     # private_networking = true
     ssh_keys = [
-      data.digitalocean_ssh_key.converge-macbook-2020-id_ed25519.id
+      data.digitalocean_ssh_key.macbook-2020-id_ed25519.id
     ]
 
     connection {

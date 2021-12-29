@@ -10,14 +10,17 @@ terraform {
       version = "~> 3.0"
     }
   }
+
+  cloud {
+    organization = "jbrunton"
+
+    workspaces {
+      name = "infra-test"
+    }
+  }
 }
 
-variable "do_token" {}
-variable "pvt_key" {}
-
-provider "digitalocean" {
-  token = var.do_token
-}
+provider "digitalocean" {}
 
 data "digitalocean_ssh_key" "macbook-2020-id_ed25519" {
   name = "macbook-2020-id_ed25519"
@@ -25,5 +28,4 @@ data "digitalocean_ssh_key" "macbook-2020-id_ed25519" {
 
 provider "aws" {
   region = "us-east-1"
-  profile = "default"
 }

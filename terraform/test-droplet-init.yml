@@ -1,0 +1,5 @@
+ #cloud-config
+ runcmd:
+   - export PATH=$PATH:/usr/bin
+   - sudo apt update
+   - sudo apt install -y nginx

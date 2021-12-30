@@ -1,0 +1,42 @@
+---
+- name: Deploy
+  hosts: test-droplet
+  vars:
+    compose_env:
+      TAG: latest
+      POSTGRES_LOCAL_PORT: 13947
+  tasks:
+    - name: "Create directories"
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - /app
+        - /app/packages
+        - /app/packages/api
+        - /app/packages/web
+        - /app/nginx
+    - name: Copy compose file
+      ansible.builtin.copy:
+        src: ../../docker-compose.yml
+        dest: /app/docker-compose.yml
+    - name: Pull latest images services
+      environment: "{{ compose_env }}"
+      command:
+        chdir: /app
+        cmd: docker-compose pull
+    - name: Stop services
+      environment: "{{ compose_env }}"
+      command:
+        chdir: /app
+        cmd: docker-compose down
+    - name: Start services
+      environment: "{{ compose_env }}"
+      command:
+        chdir: /app
+        cmd: docker-compose up --no-build -d
+    - name: Run migrations
+      environment: "{{ compose_env }}"
+      command:
+        chdir: /app
+        cmd: docker-compose exec api npx knex migrate:latest

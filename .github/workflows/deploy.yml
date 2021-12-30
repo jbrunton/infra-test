@@ -1,6 +1,10 @@
 name: deploy
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: [provision]
+    branches: [develop]
+    types: [completed]
 
 jobs:
   

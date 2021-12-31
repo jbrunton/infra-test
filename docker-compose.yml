@@ -13,7 +13,7 @@ services:
     build:
       context: ./packages/web
       args:
-        - REACT_APP_API_ADDRESS=http://test-droplet.infra-test.jbrunton-aws.com/api
+        - REACT_APP_API_ADDRESS=http://test-droplet-dev.infra-test.jbrunton-aws.com/api
     ports:
       - "3000:3000"
 

@@ -1,9 +1,10 @@
 import './App.css';
+import { env } from './env';
 import { useState, useEffect } from "react";
 
 const newSessionId = () => (Math.random() + 1).toString(36).substring(7);
 
-const apiAddress = process.env.REACT_APP_API_ADDRESS;
+const apiAddress = env.REACT_APP_API_ADDRESS;
 
 const getCounter = async (sessionId) => {
   const response = await fetch(`${apiAddress}/counters/${sessionId}`);

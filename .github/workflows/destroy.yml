@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       stack_name:
-        description: Stack to deploy to
+        description: Stack to destroy
         required: true
 
 env:

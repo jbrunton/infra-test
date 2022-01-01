@@ -4,6 +4,7 @@
   vars:
     compose_env:
       TAG: "{{ stack_name }}"
+      API_ADDRESS: "{{ API_ADDRESS }}"
       POSTGRES_LOCAL_PORT: 13947
   tasks:
     - name: "Create directories"

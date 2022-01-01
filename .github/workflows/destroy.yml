@@ -1,6 +1,14 @@
 name: destroy
 on:
   workflow_dispatch:
+    inputs:
+      stack_name:
+        description: Stack to deploy to
+        required: true
+
+env:
+  # If triggered manually, inputs.stack_name is provided. Else, triggered by push to develop.
+  stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
 
 jobs:
   
@@ -13,7 +21,7 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: destroy
-          stack-name: dev
+          stack-name: ${{ env.stack_name }}
           work-dir: pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

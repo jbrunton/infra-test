@@ -1,29 +1,29 @@
-name: deploy
-on:
-  workflow_dispatch:
-    inputs:
-      stack_name:
-        description: Stack to deploy to
-        required: true
-        default: dev
-  workflow_run:
-    workflows: [provision]
-    branches: [develop]
-    types: [completed]
+# name: deploy
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       stack_name:
+#         description: Stack to deploy to
+#         required: true
+#         default: dev
+#   workflow_run:
+#     workflows: [provision]
+#     branches: [develop]
+#     types: [completed]
 
-jobs:
+# jobs:
   
-  deploy:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./ansible
-    env:
-      stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
-    steps:
-      - uses: webfactory/ssh-agent@v0.5.4
-        with:
-            ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - uses: actions/checkout@v2
-      - name: Run deploy playbook
-        run: ansible-playbook playbooks/deploy.yml -i hosts.yml --extra-vars "stack_name=${stack_name}"
+#   deploy:
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         working-directory: ./ansible
+#     env:
+#       stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
+#     steps:
+#       - uses: webfactory/ssh-agent@v0.5.4
+#         with:
+#             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#       - uses: actions/checkout@v2
+#       - name: Run deploy playbook
+#         run: ansible-playbook playbooks/deploy.yml -i hosts.yml --extra-vars "stack_name=${stack_name}"

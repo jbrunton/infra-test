@@ -22,7 +22,7 @@ jobs:
       stack_name: ${{ steps.set_outputs.outputs.stack_name }}
     steps:
       - id: set_outputs
-        run: echo "::set-output stack_name=${stack_name}"
+        run: echo "::set-output name=stack_name::${stack_name}"
         
   build:
     runs-on: ubuntu-latest

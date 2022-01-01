@@ -3,7 +3,7 @@
   hosts: test-droplet
   vars:
     compose_env:
-      TAG: latest
+      TAG: "{{ stack_name }}"
       POSTGRES_LOCAL_PORT: 13947
   tasks:
     - name: "Create directories"

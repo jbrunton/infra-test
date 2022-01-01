@@ -22,6 +22,8 @@ jobs:
       COMPOSE_FILE: docker-compose.yml
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      API_ADDRESS: http://test-droplet-${{ env.stack_name }}.infra-test.jbrunton-aws.com/api
+      TAG: ${{ env.stack_name }}
     steps:
       - uses: actions/checkout@v2
       - name: Docker Login

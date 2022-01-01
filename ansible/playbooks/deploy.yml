@@ -5,6 +5,7 @@
     compose_env:
       TAG: latest
       POSTGRES_LOCAL_PORT: 13947
+      API_ADDRESS: "http://test-droplet-{{ stack_name }}.infra-test.jbrunton-aws.com/api"
   tasks:
     - name: "Create directories"
       file:

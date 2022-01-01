@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+    inputs:
+      env_name:
+        description: Environment to deploy to
+        required: true
 
 jobs:
   
@@ -12,6 +17,7 @@ jobs:
       COMPOSE_FILE: docker-compose.yml
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      ENV_NAME: ${{ github.event.inputs.env_name && github.event.inputs.env_name || 'dev' }}
     steps:
       - uses: actions/checkout@v2
       - name: Docker Login

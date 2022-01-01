@@ -66,10 +66,12 @@ jobs:
     defaults:
       run:
         working-directory: ./ansible
+    env:
+      API_ADDRESS: http://test-droplet-${{ needs.config.outputs.stack_name }}.infra-test.jbrunton-aws.com/api
     steps:
       - uses: webfactory/ssh-agent@v0.5.4
         with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: actions/checkout@v2
       - name: Run deploy playbook
-        run: ansible-playbook playbooks/deploy.yml -i hosts.yml --extra-vars "stack_name=${stack_name}"
+        run: ansible-playbook playbooks/deploy.yml -i hosts.yml --extra-vars "stack_name=${stack_name} API_ADDRESS=${API_ADDRESS}"

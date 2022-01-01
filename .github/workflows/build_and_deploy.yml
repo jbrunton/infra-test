@@ -11,19 +11,28 @@ on:
         required: true
 
 env:
-  # If triggered manually, inputs.stack_name is provided. Else, triggered by push to develop.
   stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
 
 jobs:
-  
+
+  # workaround for https://github.community/t/how-to-set-and-access-a-workflow-variable/17335/11
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      stack_name: ${{ steps.set_outputs.outputs.stack_name }}
+    steps:
+      - id: set_outputs
+        run: echo "::set-output stack_name=${stack_name}"
+        
   build:
     runs-on: ubuntu-latest
+    needs: [config]
     env:
       COMPOSE_FILE: docker-compose.yml
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      API_ADDRESS: http://test-droplet-${{ env.stack_name }}.infra-test.jbrunton-aws.com/api
-      TAG: ${{ env.stack_name }}
+      API_ADDRESS: http://test-droplet-${{ needs.config.outputs.stack_name }}.infra-test.jbrunton-aws.com/api
+      TAG: ${{ needs.config.outputs.stack_name }}
     steps:
       - uses: actions/checkout@v2
       - name: Docker Login
@@ -35,6 +44,7 @@ jobs:
 
   provision:
     runs-on: ubuntu-latest
+    needs: [config]
     steps:
       - uses: actions/checkout@v2
       - run: npm install
@@ -42,7 +52,7 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: up
-          stack-name: ${{ env.stack_name }}
+          stack-name: ${stack_name}
           work-dir: pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
@@ -52,7 +62,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build, provision]
+    needs: [config, build, provision]
     defaults:
       run:
         working-directory: ./ansible

@@ -6,9 +6,6 @@ services:
 
   web:
     image: "infra-test_web"
-    build:
-      args:
-        - REACT_APP_API_ADDRESS=http://localhost:$NGINX_LOCAL_PORT/api
 
   nginx:
     image: 'infra-test_nginx'

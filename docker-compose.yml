@@ -12,10 +12,11 @@ services:
     image: "jbrunton/infra-test_web:${TAG?}"
     build:
       context: ./packages/web
-      args:
-        - REACT_APP_API_ADDRESS=http://test-droplet-dev.infra-test.jbrunton-aws.com/api
     ports:
       - "3000:3000"
+    environment:
+      - "REACT_APP_API_ADDRESS=$API_ADDRESS"
+    entrypoint: ./entrypoint.sh
 
   nginx:
     image: "jbrunton/infra-test_nginx:${TAG?}"

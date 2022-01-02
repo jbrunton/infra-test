@@ -1,6 +1,11 @@
 name: provision
 on:
   workflow_dispatch:
+    inputs:
+      stack_name:
+        description: Stack to provision
+        required: true
+        default: dev
   workflow_run:
     workflows: [build]
     branches: [develop]
@@ -10,6 +15,8 @@ jobs:
   
   provision:
     runs-on: ubuntu-latest
+    env:
+      stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
     steps:
       - uses: actions/checkout@v2
       - run: npm install
@@ -17,7 +24,7 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: up
-          stack-name: dev
+          stack-name: ${{ env.stack_name }}
           work-dir: pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

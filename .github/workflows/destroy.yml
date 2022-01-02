@@ -1,11 +1,17 @@
 name: destroy
 on:
   workflow_dispatch:
+    inputs:
+      stack_name:
+        description: Stack to destroy
+        required: true
 
 jobs:
   
   destroy:
     runs-on: ubuntu-latest
+    env:
+      stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
     steps:
       - uses: actions/checkout@v2
       - run: npm install
@@ -13,7 +19,7 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: destroy
-          stack-name: dev
+          stack-name: ${{ env.stack_name }}
           work-dir: pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

@@ -6,6 +6,10 @@ on:
         description: Stack to deploy to
         required: true
         default: dev
+      tag:
+        description: Docker tag name to deploy
+        required: true
+        default: latest
   workflow_run:
     workflows: [provision]
     branches: [develop]
@@ -20,10 +24,11 @@ jobs:
         working-directory: ./ansible
     env:
       stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
+      tag: ${{ github.event.inputs.tag && github.event.inputs.tag || 'latest' }}
     steps:
       - uses: webfactory/ssh-agent@v0.5.4
         with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: actions/checkout@v2
       - name: Run deploy playbook
-        run: ansible-playbook playbooks/deploy.yml -i hosts.yml --extra-vars "stack_name=${stack_name}"
+        run: ansible-playbook playbooks/deploy.yml -i hosts.yml --extra-vars "stack_name=${stack_name} tag=${tag}"

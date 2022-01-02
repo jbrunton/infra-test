@@ -20,7 +20,7 @@ const droplet = new digitalocean.Droplet("droplet", {
 export const ip = droplet.ipv4Address;
 
 // Create DNS record
-const awsProvider = new aws.Provider("aws", { region: "eu-west-1" });
+const awsProvider = new aws.Provider("aws", { region: "eu-west-2" });
 const zone = aws.route53.getZone({ name: "jbrunton-aws.com" }, { provider: awsProvider });
 const route53record = new aws.route53.Record("www", {
   zoneId: zone.then(zone => zone.zoneId),

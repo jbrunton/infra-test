@@ -1,5 +1,10 @@
 name: build
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Docker tag name for build
+        required: true
   push:
     branches:
       - develop
@@ -12,11 +17,10 @@ jobs:
       COMPOSE_FILE: docker-compose.yml
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      TAG: ${{ github.event.inputs.tag && github.event.inputs.tag || 'latest' }}
     steps:
       - uses: actions/checkout@v2
       - name: Docker Login
         run: echo "$DOCKER_ACCESS_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - name: Docker Build
-        run: docker compose build
-      - name: Docker Push
-        run: docker compose push
+      - name: Build
+        run: build/build.sh

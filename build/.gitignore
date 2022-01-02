@@ -1,0 +1,3 @@
+config/.env
+config/docker-compose.yml
+config/.imgpkg/images.yml

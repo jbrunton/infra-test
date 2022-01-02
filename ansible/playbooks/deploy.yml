@@ -1,38 +1,38 @@
 ---
 - name: Deploy
-  hosts: droplet
+  hosts: server
   tasks:
     - name: "Create directories"
       file:
         path: "{{ item }}"
         state: directory
       loop:
-        - /app
-        - /app/config
+        - /home/ubuntu/app
+        - /home/ubuntu/app/config
     - name: Fetch config
       environment:
         TAG: "{{ tag }}"
       shell:
-        cmd: imgpkg pull -b jbrunton/infra-test_config:$TAG -o /app/config
+        cmd: imgpkg pull -b jbrunton/infra-test_config:$TAG -o /home/ubuntu/app/config
     - name: Generate compose file
       environment:
         API_ADDRESS: "http://{{ stack_name }}.infra-test.jbrunton-aws.com/api"
       shell:
-        chdir: /app/config
-        cmd: "docker-compose config | kbld --images-annotation=false -f - -f ./.imgpkg/images.yml > /app/docker-compose.yml"
+        chdir: /home/ubuntu/app/config
+        cmd: "docker-compose config | kbld --images-annotation=false -f - -f ./.imgpkg/images.yml > /home/ubuntu/app/docker-compose.yml"
     - name: Pull latest images services
       command:
-        chdir: /app
+        chdir: /home/ubuntu/app
         cmd: docker-compose pull
     - name: Stop services
       command:
-        chdir: /app
+        chdir: /home/ubuntu/app
         cmd: docker-compose down
     - name: Start services
       command:
-        chdir: /app
+        chdir: /home/ubuntu/app
         cmd: docker-compose up --no-build -d
     - name: Run migrations
       command:
-        chdir: /app
+        chdir: /home/ubuntu/app
         cmd: docker-compose exec api npx knex migrate:latest

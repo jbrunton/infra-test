@@ -20,6 +20,7 @@ jobs:
       TAG: ${{ github.event.inputs.tag && github.event.inputs.tag || 'latest' }}
     steps:
       - uses: actions/checkout@v2
+      - uses: vmware-tanzu/carvel-setup-action@v1
       - name: Docker Login
         run: echo "$DOCKER_ACCESS_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - name: Build

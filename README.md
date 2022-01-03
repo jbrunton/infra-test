@@ -6,17 +6,25 @@ For now the environments aren't automated on per-PR basis, but the deploy workfl
 
 The application used for testing is a very simple counter app with a Postgres database, Express API and SPA React front end. You can try it [here](http://dev.infra-test.jbrunton-aws.com/).
 
-## Automated builds and deploy to "staging"
+## Automated builds and deployments to "staging"
 
-* Every merge to `developer` triggers a [build](https://github.com/jbrunton/infra-test/actions/workflows/build.yml) followed by a [deploy](https://github.com/jbrunton/infra-test/actions/workflows/deploy.yml) to [dev.infra-test.jbrunton-aws.com](http://dev.infra-test.jbrunton-aws.com/).
+Every merge to `develop` triggers a [build](https://github.com/jbrunton/infra-test/actions/workflows/build.yml) followed by a [deploy](https://github.com/jbrunton/infra-test/actions/workflows/deploy.yml) to [dev.infra-test.jbrunton-aws.com](http://dev.infra-test.jbrunton-aws.com/).
 
 ## Deploying a dev branch to a test environment
 
-1. Trigger a build for your branch, and name the tag suitably.
-2. After this, trigger a deploy for the new tag and your new stack name.
+1. Trigger a build for your branch, with an appropriate tag name.
+
+![Trigger build](https://raw.githubusercontent.com/jbrunton/infra-test/develop/docs/trigger-build.png)
+
+3. After this, trigger a deploy for the new tag and your stack name.
+
+![Trigger deploy](https://raw.githubusercontent.com/jbrunton/infra-test/develop/docs/trigger-deploy.png)
+
+This will provision and deploy an environment at `<stack-name>.infra-test.jbrunton-aws.com`.
 
 ## Technical notes of interest
 
-* Pulumi is used to configure infrastructure (DigitalOcean droplets and AWS Route 53 DNS records). This includes installing Docker Compose with cloud-init.
-* Ansible is used to deploy changes once an environment is configured.
-* The app uses kbld and imgpkg to ensure consistent deployments (in case container tags are updated).
+* Pulumi is used to [provision the infrastructure](https://github.com/jbrunton/infra-test/blob/develop/pulumi/index.ts) (including an EC2 instance and rules for an Application Load Balancer). This includes installing Docker Compose and other dependencies with [cloud-init](https://github.com/jbrunton/infra-test/blob/develop/pulumi/user_data.yml).
+* Ansible is used to [deploy changes](https://github.com/jbrunton/infra-test/blob/develop/ansible/playbooks/deploy.yml) once an environment is provisioned.
+* The app uses [kbld](https://carvel.dev/kbld/) and [imgpkg](https://carvel.dev/imgpkg/) to ensure consistent deployments in case container tags are updated (see [build.sh](https://github.com/jbrunton/infra-test/blob/develop/build/build.sh)).
+* TLS termination is handled by the AWS load balancer.

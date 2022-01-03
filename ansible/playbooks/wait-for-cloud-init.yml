@@ -1,0 +1,8 @@
+---
+- name: Wait for cloud-init
+  hosts: server
+  tasks:
+    - name: Wait for cloud-init to complete
+      wait_for:
+        path: /var/lib/cloud/instance/boot-finished
+        timeout: 60

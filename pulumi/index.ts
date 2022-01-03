@@ -1,53 +1,73 @@
 import * as pulumi from "@pulumi/pulumi";
+import * as command from "@pulumi/command";
 import * as aws from "@pulumi/aws";
-import * as digitalocean from "@pulumi/digitalocean";
-
-const userData =
-`#cloud-config
-runcmd:
-  # install docker-compose: https://docs.docker.com/compose/install/
-  - sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  - sudo chmod +x /usr/local/bin/docker-compose
-  # install Carvel. TODO: pin versions.
-  - wget -O- https://carvel.dev/install.sh | bash
-
-apt:
-  sources:
-    docker.list:
-      source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-
-packages:
-  - docker-ce
-  - docker-ce-cli
-  # increase system entropy per https://github.com/docker/compose/issues/6678
-  - haveged
-`
-
-const awsProvider = new aws.Provider("aws", { region: "eu-west-1" });
+import * as fs from 'fs';
 
 const stackName = pulumi.getStack();
+const provider = new aws.Provider("aws", { region: "eu-west-2" });
 
-const sshKey = digitalocean.getSshKey({ name: "macbook-2020-id_ed25519" });
+// Create the server
+const group = new aws.ec2.SecurityGroup("server-secgrp", {
+  ingress: [
+    { protocol: "tcp", fromPort: 22, toPort: 22, cidrBlocks: ["0.0.0.0/0"] },
+    { protocol: "tcp", fromPort: 80, toPort: 80, cidrBlocks: ["0.0.0.0/0"] },
+  ],
+  egress: [
+    { protocol: "tcp", fromPort: 0, toPort: 65535, cidrBlocks: ["0.0.0.0/0"] },
+  ],
+}, { provider });
 
-const droplet = new digitalocean.Droplet("test-droplet", {
-  image: "ubuntu-20-04-x64",
-  name: `test-droplet-${stackName}`,
-  region: "lon1",
-  size: "s-1vcpu-1gb",
-  sshKeys: sshKey.then(sshKey => [sshKey.id.toString()]),
-  userData: userData,
+const ami = aws.ec2.getAmiOutput({
+  filters: [{
+    name: "name",
+    values: ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64\*"],
+  }],
+  owners: ["099720109477"], // Canonical Ltd.
+  mostRecent: true,
+}, { provider });
+
+const userData = fs.readFileSync("./user_data.yml", 'utf-8');
+const server = new aws.ec2.Instance("server", {
+  instanceType: "t2.micro",
+  vpcSecurityGroupIds: [ group.id ],
+  keyName: "aws-ec2",
+  ami: ami.id,
+  userData,
+}, { provider });
+
+export const serverIp = server.publicIp;
+
+// Configure loadbalancer rules
+const vpc = aws.ec2.getVpcOutput({
+  id: "vpc-253a0e4d",
+}, { provider });
+
+const targetGroup = new aws.lb.TargetGroup(`infra-test-target-${stackName}`, {
+  port: 80,
+  protocol: "HTTP",
+  vpcId: vpc.id,
+}, { provider });
+
+const targetGroupAttachment = new aws.lb.TargetGroupAttachment(`infra-test-target-attachment-${stackName}`, {
+  targetGroupArn: targetGroup.arn,
+  targetId: server.id,
+}, {
+  provider,
 });
 
-// Export the name of the bucket
-export const ip = droplet.ipv4Address;
+const listenerArn = "arn:aws:elasticloadbalancing:eu-west-2:030461922427:listener/app/infra-test-lb/2e4ed1da651a44e1/cd971153caebdc9b";
 
-const zone = aws.route53.getZone({ name: "jbrunton-aws.com" }, { provider: awsProvider });
-
-const route53record = new aws.route53.Record("www", {
-  zoneId: zone.then(zone => zone.zoneId),
-  name: zone.then(zone => `test-droplet-${stackName}.infra-test.${zone.name}`),
-  type: "A",
-  records: [ip],
-  ttl: 300,
-}, { provider: awsProvider });
+new aws.lb.ListenerRule(`infra-test-host-rule-${stackName}`, {
+  listenerArn: listenerArn,
+  actions: [{
+      type: "forward",
+      targetGroupArn: targetGroup.arn,
+  }],
+  conditions: [
+      {
+          hostHeader: {
+              values: [`${stackName}.infra-test.jbrunton-aws.com`],
+          },
+      },
+  ],
+}, { provider });

@@ -5,13 +5,15 @@ on:
       tag:
         description: Docker tag name for build
         required: true
-  push:
-    branches:
-      - develop
+  workflow_run:
+    workflows: [test]
+    branches: [develop]
+    types: [completed]
 
 jobs:
   
   build:
+    if: ${{ !github.event.workflow_run || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     env:
       COMPOSE_FILE: docker-compose.yml

@@ -60,7 +60,7 @@ function App() {
         <p>
           Session ID: <code>{sessionId}</code>
         </p>
-        <p>
+        <p id="counter">
           Counter: <code>{count}</code>
         </p>
         <a

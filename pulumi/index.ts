@@ -37,6 +37,7 @@ const server = new aws.ec2.Instance("server", {
 
 export const serverIp = server.publicIp;
 
+// Configure loadbalancer rules
 const vpc = aws.ec2.getVpcOutput({
   id: "vpc-253a0e4d",
 }, { provider });
@@ -54,13 +55,9 @@ const targetGroupAttachment = new aws.lb.TargetGroupAttachment(`infra-test-targe
   provider,
 });
 
-const lb = aws.lb.getLoadBalancerOutput({
-  name: "infra-test-lb"
-}, { provider });
-
 const listenerArn = "arn:aws:elasticloadbalancing:eu-west-2:030461922427:listener/app/infra-test-lb/2e4ed1da651a44e1/cd971153caebdc9b";
 
-const rule = new aws.lb.ListenerRule(`infra-test-host-rule-${stackName}`, {
+new aws.lb.ListenerRule(`infra-test-host-rule-${stackName}`, {
   listenerArn: listenerArn,
   actions: [{
       type: "forward",

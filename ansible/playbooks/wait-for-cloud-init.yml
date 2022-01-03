@@ -5,4 +5,4 @@
     - name: Wait for cloud-init to complete
       wait_for:
         path: /var/lib/cloud/instance/boot-finished
-        timeout: 60
+        timeout: 500

@@ -35,16 +35,42 @@ const server = new aws.ec2.Instance("server", {
   userData,
 }, { provider });
 
-export const ip = server.publicIp;
+export const serverIp = server.publicIp;
 
-// Create DNS record
-const zone = aws.route53.getZone({ name: "jbrunton-aws.com" }, { provider });
-const route53record = new aws.route53.Record("www", {
-  zoneId: zone.then(zone => zone.zoneId),
-  name: zone.then(zone => `${stackName}.infra-test.${zone.name}`),
-  type: "A",
-  records: [ip],
-  ttl: 300,
+const vpc = aws.ec2.getVpcOutput({
+  id: "vpc-253a0e4d",
 }, { provider });
 
-export const url = route53record.name;
+const targetGroup = new aws.lb.TargetGroup(`infra-test-target-${stackName}`, {
+  port: 80,
+  protocol: "HTTP",
+  vpcId: vpc.id,
+}, { provider });
+
+const targetGroupAttachment = new aws.lb.TargetGroupAttachment(`infra-test-target-attachment-${stackName}`, {
+  targetGroupArn: targetGroup.arn,
+  targetId: server.id,
+}, {
+  provider,
+});
+
+const lb = aws.lb.getLoadBalancerOutput({
+  name: "infra-test-lb"
+}, { provider });
+
+const listenerArn = "arn:aws:elasticloadbalancing:eu-west-2:030461922427:listener/app/infra-test-lb/2e4ed1da651a44e1/cd971153caebdc9b";
+
+const rule = new aws.lb.ListenerRule(`infra-test-host-rule-${stackName}`, {
+  listenerArn: listenerArn,
+  actions: [{
+      type: "forward",
+      targetGroupArn: targetGroup.arn,
+  }],
+  conditions: [
+      {
+          hostHeader: {
+              values: [`${stackName}.infra-test.jbrunton-aws.com`],
+          },
+      },
+  ],
+}, { provider });

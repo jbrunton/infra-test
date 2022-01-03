@@ -23,15 +23,18 @@ jobs:
     if: ${{ !github.event.workflow_run || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     env:
-      stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
+      STACK_NAME: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
+    outputs:
+      server_ip: ${{ steps.pulumi.outputs.serverIp }}
     steps:
       - uses: actions/checkout@v2
       - run: npm install
         working-directory: ./pulumi
-      - uses: pulumi/actions@v3
+      - id: pulumi
+        uses: pulumi/actions@v3
         with:
           command: up
-          stack-name: ${{ env.stack_name }}
+          stack-name: ${{ env.STACK_NAME }}
           work-dir: pulumi
           upsert: true
         env:
@@ -47,12 +50,16 @@ jobs:
       run:
         working-directory: ./ansible
     env:
-      stack_name: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
-      tag: ${{ github.event.inputs.tag && github.event.inputs.tag || 'latest' }}
+      STACK_NAME: ${{ github.event.inputs.stack_name && github.event.inputs.stack_name || 'dev' }}
+      TAG: ${{ github.event.inputs.tag && github.event.inputs.tag || 'latest' }}
+      SERVER_IP: ${{ needs.provision.outputs.server_ip }}
     steps:
       - uses: webfactory/ssh-agent@v0.5.4
         with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: actions/checkout@v2
       - name: Run deploy playbook
-        run: ansible-playbook playbooks/deploy.yml -i hosts.yml --extra-vars "stack_name=${stack_name} tag=${tag}"
+        run: |
+          ansible-playbook playbooks/deploy.yml \
+            -i hosts.yml \
+            --extra-vars "stack_name=$STACK_NAME tag=$TAG server_ip=$SERVER_IP"

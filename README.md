@@ -8,7 +8,7 @@ The application used for testing is a very simple counter app with a Postgres da
 
 ## Automated builds and deployments to "staging"
 
-Every merge to `develop` triggers a [build](https://github.com/jbrunton/infra-test/actions/workflows/build.yml) followed by a [deploy](https://github.com/jbrunton/infra-test/actions/workflows/deploy.yml) to [dev.infra-test.jbrunton-aws.com](http://dev.infra-test.jbrunton-aws.com/).
+Every merge to `develop` triggers the [test](https://github.com/jbrunton/infra-test/actions/workflows/test.yml) then [build](https://github.com/jbrunton/infra-test/actions/workflows/build.yml) workflows, followed by a [deploy](https://github.com/jbrunton/infra-test/actions/workflows/deploy.yml) to [dev.infra-test.jbrunton-aws.com](http://dev.infra-test.jbrunton-aws.com/).
 
 ## Deploying a dev branch to a test environment
 
@@ -28,3 +28,5 @@ This will provision and deploy an environment at `<stack-name>.infra-test.jbrunt
 * Ansible is used to [deploy changes](https://github.com/jbrunton/infra-test/blob/develop/ansible/playbooks/deploy.yml) once an environment is provisioned.
 * The app uses [kbld](https://carvel.dev/kbld/) and [imgpkg](https://carvel.dev/imgpkg/) to ensure consistent deployments in case container tags are updated (see [build.sh](https://github.com/jbrunton/infra-test/blob/develop/build/build.sh)).
 * TLS termination is handled by the AWS load balancer.
+* For good measure, CI runs Cypress tests, making use of Docker Compose to [run the app locally](https://github.com/jbrunton/infra-test/blob/develop/build/start-local.sh).
+

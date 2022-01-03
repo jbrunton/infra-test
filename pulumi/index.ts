@@ -48,7 +48,7 @@ const targetGroup = new aws.lb.TargetGroup(`infra-test-target-${stackName}`, {
   vpcId: vpc.id,
 }, { provider });
 
-const targetGroupAttachment = new aws.lb.TargetGroupAttachment(`infra-test-target-attachment-${stackName}`, {
+new aws.lb.TargetGroupAttachment(`infra-test-target-attachment-${stackName}`, {
   targetGroupArn: targetGroup.arn,
   targetId: server.id,
 }, {

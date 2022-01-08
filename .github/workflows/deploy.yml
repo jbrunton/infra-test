@@ -6,7 +6,6 @@ on:
       stack_name:
         description: Stack to deploy to
         required: true
-        default: dev
       tag:
         description: Docker tag name to deploy
         required: true

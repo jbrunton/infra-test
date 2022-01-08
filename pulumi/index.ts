@@ -42,13 +42,13 @@ const vpc = aws.ec2.getVpcOutput({
   id: "vpc-253a0e4d",
 }, { provider });
 
-const targetGroup = new aws.lb.TargetGroup(`infra-test-target-${stackName}`, {
+const targetGroup = new aws.lb.TargetGroup(`infra-test-${stackName}`, {
   port: 80,
   protocol: "HTTP",
   vpcId: vpc.id,
 }, { provider });
 
-new aws.lb.TargetGroupAttachment(`infra-test-target-attachment-${stackName}`, {
+new aws.lb.TargetGroupAttachment(`infra-test-${stackName}`, {
   targetGroupArn: targetGroup.arn,
   targetId: server.id,
 }, {
@@ -57,7 +57,7 @@ new aws.lb.TargetGroupAttachment(`infra-test-target-attachment-${stackName}`, {
 
 const listenerArn = "arn:aws:elasticloadbalancing:eu-west-2:030461922427:listener/app/infra-test-lb/2e4ed1da651a44e1/cd971153caebdc9b";
 
-new aws.lb.ListenerRule(`infra-test-host-rule-${stackName}`, {
+new aws.lb.ListenerRule(`infra-test-${stackName}`, {
   listenerArn: listenerArn,
   actions: [{
       type: "forward",

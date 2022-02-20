@@ -8,3 +8,5 @@ RUN npm install --no-optional
 
 COPY . .
 RUN npm run build
+
+ENTRYPOINT [ "./entrypoint.sh" ]

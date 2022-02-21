@@ -3,6 +3,7 @@ region: lon
 alerts:
 - rule: DEPLOYMENT_FAILED
 - rule: DOMAIN_FAILED
+- rule: DEPLOYMENT_LIVE
 databases:
 - engine: PG
   name: db

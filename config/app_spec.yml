@@ -8,6 +8,10 @@ databases:
   num_nodes: 1
   size: db-s-dev-database
   version: "12"
+domains:
+- domain: test.jbrunton-do.com
+  type: PRIMARY
+  zone: jbrunton-do.com
 name: infra-test
 region: lon
 services:

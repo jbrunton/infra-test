@@ -15,14 +15,21 @@ const baseConfig = {
   }
 };
 
+const getProductionConfig = () => {
+  return process.env.POSTGRES_CONNECTION_STRING
+    ? {
+      ...baseConfig,
+      connection: process.env.POSTGRES_CONNECTION_STRING,
+    } : {
+      ...baseConfig,
+      connection: {
+        ...baseConfig.connection,
+        host: 'postgres'
+      },
+    };
+};
+
 module.exports = {
   development: baseConfig,
-  production: {
-    ...baseConfig,
-    connection: {
-      ...baseConfig.connection,
-      host: 'postgres',
-      post: 5678,
-    },
-  },
+  production: getProductionConfig(),
 };

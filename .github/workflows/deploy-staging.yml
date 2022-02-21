@@ -4,11 +4,19 @@ on:
   push:
     branches:
       - develop
-      
+    paths:    
+      - config/staging.yml
+
 jobs:
+
   deploy-staging:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.name }}"
+      - uses: actions/checkout@v2
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_TOKEN }}
+      - name: update spec
+        env:
+          APP_ID: 612ba000-736e-4a24-b614-20d285e59382
+        run: doctl apps update $APP_ID --spec config/staging.yml

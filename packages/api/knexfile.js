@@ -16,10 +16,15 @@ const baseConfig = {
 };
 
 const getProductionConfig = () => {
-  return process.env.POSTGRES_CONNECTION_STRING
+  return process.env.POSTGRES_URL
     ? {
       ...baseConfig,
-      connection: process.env.POSTGRES_CONNECTION_STRING,
+      connection: {
+        connectionString: process.env.POSTGRES_URL,
+        ssl: {
+          ca: process.env.POSTGRES_CA_CERT,
+        },
+      }
     } : {
       ...baseConfig,
       connection: {

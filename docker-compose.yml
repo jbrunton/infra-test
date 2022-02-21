@@ -5,6 +5,8 @@ services:
     image: "jbrunton/infra-test_api:${TAG?}"
     build:
       context: ./packages/api
+    environment:
+      - POSTGRES_DISABLE_SSL=1
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`$DOMAIN`) && PathPrefix(`/api/`)"

@@ -8,6 +8,7 @@
         "@pulumi/awsx": "^0.30.0",
         "@pulumi/command": "0.0.3",
         "@pulumi/digitalocean": "^4.10.0",
-        "@pulumi/pulumi": "^3.0.0"
+        "@pulumi/pulumi": "^3.0.0",
+        "yaml": "2.0.0-10"
     }
 }

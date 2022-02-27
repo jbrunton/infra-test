@@ -1,7 +1,7 @@
 services:
   api:
     version: "1.0"
-    instanceCount: 2
+    instanceCount: 1
     instanceSizeSlug: professional-xs
     jobs:
       - name: api-migrate

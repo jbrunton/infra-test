@@ -1,6 +1,6 @@
 services:
   api:
-    version: latest
+    version: "1.0"
     instanceCount: 2
     instanceSizeSlug: professional-xs
     jobs:
@@ -9,6 +9,6 @@ services:
         instanceSizeSlug: professional-xs
         runCommand: npx knex migrate:latest
   web:
-    version: latest
+    version: "2.0"
     instanceCount: 1
     instanceSizeSlug: professional-xs

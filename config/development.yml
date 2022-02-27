@@ -2,9 +2,12 @@ services:
   api:
     version: latest
     instanceCount: 1
+    instanceSizeSlug: basic-xxs
   web:
     version: latest
     instanceCount: 1
+    instanceSizeSlug: basic-xxs
 jobs:
   db-migrate:
     version: latest
+    instanceSizeSlug: basic-xxs

@@ -16,7 +16,7 @@ type JobName = "db-migrate";
 
 type VersionManifest = {
   name: string;
-  services: Record<ServiceName, { version: string }>;
+  services: Record<ServiceName, { version: string, instanceCount: number }>;
   jobs: Record<JobName, { version: string }>;
 };
 
@@ -86,7 +86,7 @@ const services: AppSpecService[] = [{
     tag: manifest.services["api"].version,
   },
   envs: apiEnvs,
-  instanceCount: 1,
+  instanceCount: manifest.services["api"].instanceCount,
   instanceSizeSlug: "basic-xxs",
   routes: [{
       path: "/api",
@@ -105,7 +105,7 @@ const services: AppSpecService[] = [{
     scope: "RUN_TIME",
     value: "${APP_URL}/api",
   }],
-  instanceCount: 1,
+  instanceCount: manifest.services["web"].instanceCount,
   instanceSizeSlug: "basic-xxs",
   routes: [{
       path: "/",

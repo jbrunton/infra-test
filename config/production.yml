@@ -1,8 +1,10 @@
 services:
   api:
     version: latest
+    instanceCount: 2
   web:
     version: latest
+    instanceCount: 1
 jobs:
   db-migrate:
     version: latest

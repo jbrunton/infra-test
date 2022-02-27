@@ -2,9 +2,12 @@ services:
   api:
     version: latest
     instanceCount: 2
+    instanceSizeSlug: professional-xs
   web:
     version: latest
     instanceCount: 1
+    instanceSizeSlug: professional-xs
 jobs:
   db-migrate:
     version: latest
+    instanceSizeSlug: professional-xs

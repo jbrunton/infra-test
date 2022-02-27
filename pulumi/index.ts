@@ -16,8 +16,8 @@ type JobName = "db-migrate";
 
 type VersionManifest = {
   name: string;
-  services: Record<ServiceName, { version: string, instanceCount: number }>;
-  jobs: Record<JobName, { version: string }>;
+  services: Record<ServiceName, { version: string, instanceCount: number, instanceSizeSlug: string }>;
+  jobs: Record<JobName, { version: string, instanceSizeSlug: string }>;
 };
 
 type Environment = "production" | "staging" | "development";
@@ -87,7 +87,7 @@ const services: AppSpecService[] = [{
   },
   envs: apiEnvs,
   instanceCount: manifest.services["api"].instanceCount,
-  instanceSizeSlug: "basic-xxs",
+  instanceSizeSlug: manifest.services["api"].instanceSizeSlug,
   routes: [{
       path: "/api",
   }],
@@ -106,7 +106,7 @@ const services: AppSpecService[] = [{
     value: "${APP_URL}/api",
   }],
   instanceCount: manifest.services["web"].instanceCount,
-  instanceSizeSlug: "basic-xxs",
+  instanceSizeSlug: manifest.services["web"].instanceSizeSlug,
   routes: [{
       path: "/",
   }],
@@ -124,7 +124,7 @@ const jobs: AppSpecJob[] = [{
   runCommand: "npx knex migrate:latest",
   envs: apiEnvs,
   instanceCount: 1,
-  instanceSizeSlug: "basic-xxs",
+  instanceSizeSlug: manifest.jobs["db-migrate"].instanceSizeSlug,
 }];
 
 new digitalocean.App(appName, {

@@ -3,11 +3,12 @@ services:
     version: latest
     instanceCount: 2
     instanceSizeSlug: professional-xs
+    jobs:
+      - name: api-migrate
+        kind: POST_DEPLOY
+        instanceSizeSlug: professional-xs
+        runCommand: npx knex migrate:latest
   web:
     version: latest
     instanceCount: 1
-    instanceSizeSlug: professional-xs
-jobs:
-  db-migrate:
-    version: latest
     instanceSizeSlug: professional-xs

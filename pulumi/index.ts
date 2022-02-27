@@ -12,12 +12,24 @@ const stackName = pulumi.getStack();
 const appName = `infra-test-${stackName}`;
 
 type ServiceName = "api" | "web";
-type JobName = "db-migrate";
+
+type ManifestServiceJob = {
+  name: string;
+  kind: string;
+  runCommand: string;
+  instanceSizeSlug: string;
+};
+
+type ManifestService = {
+  version: string;
+  instanceCount: number;
+  instanceSizeSlug: string;
+  jobs?: ManifestServiceJob[];
+}
 
 type VersionManifest = {
   name: string;
-  services: Record<ServiceName, { version: string, instanceCount: number, instanceSizeSlug: string }>;
-  jobs: Record<JobName, { version: string, instanceSizeSlug: string }>;
+  services: Record<ServiceName, ManifestService>;
 };
 
 type Environment = "production" | "staging" | "development";
@@ -76,56 +88,68 @@ const apiEnvs: AppSpecStaticSiteEnv[] = [{
   value: "${db.CA_CERT}",
 }];
 
-const services: AppSpecService[] = [{
-  name: "api",
-  httpPort: 3001,
-  image: {
-    registry: "jbrunton",
-    registryType: "DOCKER_HUB",
-    repository: "infra-test_api",
-    tag: manifest.services["api"].version,
+const serviceSettings: Record<ServiceName, AppSpecService> = {
+  "api": {
+    name: "api",
+    httpPort: 3001,
+    image: {
+      registry: "jbrunton",
+      registryType: "DOCKER_HUB",
+      repository: "infra-test_api",
+      tag: manifest.services["api"].version,
+    },
+    envs: apiEnvs,
+    instanceCount: manifest.services["api"].instanceCount,
+    instanceSizeSlug: manifest.services["api"].instanceSizeSlug,
+    routes: [{
+        path: "/api",
+    }],
   },
-  envs: apiEnvs,
-  instanceCount: manifest.services["api"].instanceCount,
-  instanceSizeSlug: manifest.services["api"].instanceSizeSlug,
-  routes: [{
-      path: "/api",
-  }],
-}, {
-  name: "web",
-  httpPort: 3000,
-  image: {
-    registry: "jbrunton",
-    registryType: "DOCKER_HUB",
-    repository: "infra-test_web",
-    tag: manifest.services["web"].version,
-  },
-  envs: [{
-    key: "REACT_APP_API_ADDRESS",
-    scope: "RUN_TIME",
-    value: "${APP_URL}/api",
-  }],
-  instanceCount: manifest.services["web"].instanceCount,
-  instanceSizeSlug: manifest.services["web"].instanceSizeSlug,
-  routes: [{
-      path: "/",
-  }],
-}];
+  "web": {
+    name: "web",
+    httpPort: 3000,
+    image: {
+      registry: "jbrunton",
+      registryType: "DOCKER_HUB",
+      repository: "infra-test_web",
+      tag: manifest.services["web"].version,
+    },
+    envs: [{
+      key: "REACT_APP_API_ADDRESS",
+      scope: "RUN_TIME",
+      value: "${APP_URL}/api",
+    }],
+    instanceCount: manifest.services["web"].instanceCount,
+    instanceSizeSlug: manifest.services["web"].instanceSizeSlug,
+    routes: [{
+        path: "/",
+    }],
+  }
+};
 
-const jobs: AppSpecJob[] = [{
-  name: "db-migrate",
-  kind: "POST_DEPLOY",
-  image: {
-    registry: "jbrunton",
-    registryType: "DOCKER_HUB",
-    repository: "infra-test_api",
-    tag: manifest.jobs["db-migrate"].version,
-  },
-  runCommand: "npx knex migrate:latest",
-  envs: apiEnvs,
-  instanceCount: 1,
-  instanceSizeSlug: manifest.jobs["db-migrate"].instanceSizeSlug,
-}];
+const services: AppSpecService[] = [];
+const jobs: AppSpecJob[] = [];
+
+(['api', 'web'] as ServiceName[]).forEach((serviceName: ServiceName) => {
+  const serviceManifest = manifest.services[serviceName];
+  const service = serviceSettings[serviceName];
+  services.push(service);
+
+  if (serviceManifest.jobs) {
+    serviceManifest.jobs.forEach(jobManifest => {
+      const job: AppSpecJob = {
+        name: jobManifest.name,
+        kind: jobManifest.kind,
+        image: service.image,
+        envs: service.envs,
+        runCommand: jobManifest.runCommand,
+        instanceCount: 1,
+        instanceSizeSlug: jobManifest.instanceSizeSlug,
+      };
+      jobs.push(job);
+    });
+  }
+});
 
 new digitalocean.App(appName, {
   spec: {

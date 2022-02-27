@@ -1,73 +1,117 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as command from "@pulumi/command";
-import * as aws from "@pulumi/aws";
-import * as fs from 'fs';
+import * as digitalocean from "@pulumi/digitalocean";
+import * as fs from "fs";
+import * as YAML from 'yaml'
+import { AppSpecStaticSiteEnv } from "@pulumi/digitalocean/types/input";
 
 const stackName = pulumi.getStack();
-const provider = new aws.Provider("aws", { region: "eu-west-2" });
+const appName = `infra-test-${stackName}`;
 
-// Create the server
-const group = new aws.ec2.SecurityGroup("server-secgrp", {
-  ingress: [
-    { protocol: "tcp", fromPort: 22, toPort: 22, cidrBlocks: ["0.0.0.0/0"] },
-    { protocol: "tcp", fromPort: 80, toPort: 80, cidrBlocks: ["0.0.0.0/0"] },
-  ],
-  egress: [
-    { protocol: "tcp", fromPort: 0, toPort: 65535, cidrBlocks: ["0.0.0.0/0"] },
-  ],
-}, { provider });
+type ServiceName = "api" | "web";
+type JobName = "db-migrate";
 
-const ami = aws.ec2.getAmiOutput({
-  filters: [{
-    name: "name",
-    values: ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64\*"],
-  }],
-  owners: ["099720109477"], // Canonical Ltd.
-  mostRecent: true,
-}, { provider });
+type VersionManifest = {
+  name: string;
+  services: Record<ServiceName, { version: string }>;
+  jobs: Record<JobName, { version: string }>;
+};
 
-const userData = fs.readFileSync("./user_data.yml", 'utf-8');
-const server = new aws.ec2.Instance("server", {
-  instanceType: "t2.micro",
-  vpcSecurityGroupIds: [ group.id ],
-  keyName: "aws-ec2",
-  ami: ami.id,
-  userData,
-}, { provider });
+const readStagingManifest = (): VersionManifest => {
+  const content = fs.readFileSync("../config/app.yml").toString();
+  return YAML.parse(content);
+};
 
-export const serverIp = server.publicIp;
+const stagingManifest = readStagingManifest();
 
-// Configure loadbalancer rules
-const vpc = aws.ec2.getVpcOutput({
-  id: "vpc-253a0e4d",
-}, { provider });
-
-const targetGroup = new aws.lb.TargetGroup(`infra-test-${stackName}`, {
-  port: 80,
-  protocol: "HTTP",
-  vpcId: vpc.id,
-}, { provider });
-
-new aws.lb.TargetGroupAttachment(`infra-test-${stackName}`, {
-  targetGroupArn: targetGroup.arn,
-  targetId: server.id,
+const apiEnvs: AppSpecStaticSiteEnv[] = [{
+  key: "POSTGRES_HOST",
+  scope: "RUN_TIME",
+  value: "${db.HOSTNAME}",
 }, {
-  provider,
-});
+  key: "POSTGRES_PORT",
+  scope: "RUN_TIME",
+  value: "${db.PORT}",
+}, {
+  key: "POSTGRES_USER",
+  scope: "RUN_TIME",
+  value: "${db.USERNAME}",
+}, {
+  key: "POSTGRES_PASSWORD",
+  scope: "RUN_TIME",
+  value: "${db.PASSWORD}",
+}, {
+  key: "POSTGRES_DB",
+  scope: "RUN_TIME",
+  value: "${db.DATABASE}",
+}, {
+  key: "POSTGRES_CA_CERT",
+  scope: "RUN_TIME",
+  value: "${db.CA_CERT}",
+}];
 
-const listenerArn = "arn:aws:elasticloadbalancing:eu-west-2:030461922427:listener/app/infra-test-lb/2e4ed1da651a44e1/cd971153caebdc9b";
-
-new aws.lb.ListenerRule(`infra-test-${stackName}`, {
-  listenerArn: listenerArn,
-  actions: [{
-      type: "forward",
-      targetGroupArn: targetGroup.arn,
-  }],
-  conditions: [
-      {
-          hostHeader: {
-              values: [`${stackName}.infra-test.jbrunton-aws.com`],
-          },
+new digitalocean.App(appName, {
+  spec: {
+    name: appName,
+    region: "lon",
+    databases: [{
+        engine: "PG",
+        name: "db",
+        production: false,
+        version: "12",
+    }],
+    domainNames: [{
+        name: `${stackName}.infra-test.jbrunton-do.com`,
+        zone: "jbrunton-do.com",
+        type: "PRIMARY"
+    }],
+    services: [{
+      name: "api",
+      httpPort: 3001,
+      image: {
+        registry: "jbrunton",
+        registryType: "DOCKER_HUB",
+        repository: "infra-test_api",
+        tag: stagingManifest.services["api"].version,
       },
-  ],
-}, { provider });
+      envs: apiEnvs,
+      instanceCount: 1,
+      instanceSizeSlug: "basic-xxs",
+      routes: [{
+          path: "/api",
+      }],
+    }, {
+      name: "web",
+      httpPort: 3000,
+      image: {
+        registry: "jbrunton",
+        registryType: "DOCKER_HUB",
+        repository: "infra-test_web",
+        tag: stagingManifest.services["web"].version,
+      },
+      envs: [{
+        key: "REACT_APP_API_ADDRESS",
+        scope: "RUN_TIME",
+        value: "${APP_URL}/api",
+      }],
+      instanceCount: 1,
+      instanceSizeSlug: "basic-xxs",
+      routes: [{
+          path: "/",
+      }],
+    }],
+    jobs: [{
+      name: "db-migrate",
+      kind: "POST_DEPLOY",
+      image: {
+        registry: "jbrunton",
+        registryType: "DOCKER_HUB",
+        repository: "infra-test_api",
+        tag: stagingManifest.jobs["db-migrate"].version,
+      },
+      runCommand: "npx knex migrate:latest",
+      envs: apiEnvs,
+      instanceCount: 1,
+      instanceSizeSlug: "basic-xxs",
+    }]
+  },
+});

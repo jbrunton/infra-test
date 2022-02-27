@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:    
-      - config/staging.yml
+      - config/app.yml
 
 jobs:
 
@@ -13,10 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: digitalocean/action-doctl@v2
+      - run: npm install
+        working-directory: ./pulumi
+      - id: pulumi
+        uses: pulumi/actions@v3
         with:
-          token: ${{ secrets.DIGITALOCEAN_TOKEN }}
-      - name: update spec
+          command: up
+          stack-name: staging
+          work-dir: pulumi
+          upsert: true
         env:
-          APP_ID: 612ba000-736e-4a24-b614-20d285e59382
-        run: doctl apps update $APP_ID --spec config/staging.yml
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}

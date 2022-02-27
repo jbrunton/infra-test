@@ -1,0 +1,8 @@
+services:
+  api:
+    version: latest
+  web:
+    version: latest
+jobs:
+  db-migrate:
+    version: latest

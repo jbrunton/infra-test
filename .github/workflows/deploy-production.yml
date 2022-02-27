@@ -1,16 +1,32 @@
-name: Greetings
+name: deploy-production
 
-on: [pull_request, issues]
+on:
+
+  push:
+    branches:
+      - develop
+    paths:    
+      - config/production.yml
+
+  workflow_dispatch:
 
 jobs:
-  greeting:
+
+  deploy:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
     steps:
-    - uses: actions/first-interaction@v1
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: 'Message that will be displayed on users first issue'
-        pr-message: 'Message that will be displayed on users first pull request'
+      - uses: actions/checkout@v2
+      - run: npm install
+        working-directory: ./pulumi
+      - id: pulumi
+        uses: pulumi/actions@v3
+        with:
+          command: up
+          stack-name: production
+          work-dir: pulumi
+          upsert: true
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}

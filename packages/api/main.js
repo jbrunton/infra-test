@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express()
-const port = 3001
+const port = process.env.API_PORT || 3001;
 const countersRouter = require('./routers/counters');
 
 const cors = require('cors');

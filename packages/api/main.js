@@ -5,6 +5,11 @@ const countersRouter = require('./routers/counters');
 
 const cors = require('cors');
 app.use(cors());
+
+app.get("/health", (_, res) => {
+  res.sendStatus(200);
+});
+
 app.use("/counters", countersRouter);
 
 app.listen(port, () => {

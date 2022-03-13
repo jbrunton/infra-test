@@ -125,7 +125,21 @@ listener.addListenerRule("api", {
   ]
 }, { provider });
 
-const web = new awsx.ecs.FargateService("web", {
+const webLogGroup = new aws.cloudwatch.LogGroup("/ecs/infra-test_web", {
+  tags: {
+      Stack: stackName,
+      Environment: environment,
+  },
+}, { provider });
+
+const apiLogGroup = new aws.cloudwatch.LogGroup("/ecs/infra-test_api", {
+  tags: {
+      Stack: stackName,
+      Environment: environment,
+  },
+}, { provider });
+
+const web = webLogGroup.name.apply(logGroupName => new awsx.ecs.FargateService("web", {
   cluster,
   loadBalancers: [{
     containerName: "web",
@@ -144,14 +158,22 @@ const web = new awsx.ecs.FargateService("web", {
         environment: [
           { name: "WEB_PORT", value: "80" },
           { name: "REACT_APP_API_ADDRESS", value: "http://api.infra-test.dev.jbrunton-aws.com" }
-        ]
+        ],
+        logConfiguration: {
+          logDriver: "awslogs",
+          options: {
+            "awslogs-group": logGroupName,
+            "awslogs-region": "eu-west-2",
+            "awslogs-stream-prefix": "ecs"
+          }
+        }
       },
     },
   },
   desiredCount: 1,
-}, { provider });
+}, { provider }));
 
-const api = new awsx.ecs.FargateService("api", {
+const api = apiLogGroup.name.apply(logGroupName => new awsx.ecs.FargateService("api", {
   cluster,
   loadBalancers: [{
     containerName: "api",
@@ -169,12 +191,20 @@ const api = new awsx.ecs.FargateService("api", {
         }],
         environment: [
           { name: "API_PORT", value: "80" }
-        ]
+        ],
+        logConfiguration: {
+          logDriver: "awslogs",
+          options: {
+            "awslogs-group": logGroupName,
+            "awslogs-region": "eu-west-2",
+            "awslogs-stream-prefix": "ecs"
+          }
+        }
       },
     },
   },
   desiredCount: 1,
-}, { provider });
+}, { provider }));
 
 
 

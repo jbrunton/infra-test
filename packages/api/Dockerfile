@@ -9,4 +9,4 @@ RUN npm install --no-optional
 
 COPY . .
 
-CMD ["npm", "run", "start"]
+CMD ["./start.sh"]

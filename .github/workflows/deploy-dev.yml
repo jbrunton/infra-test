@@ -6,6 +6,7 @@ on:
       stack_name:
         description: Stack to deploy to
         required: true
+        default: dev
 
 jobs:
 

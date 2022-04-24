@@ -44,6 +44,10 @@ const getEnvironment = (): Environment => {
 
 const environment = getEnvironment();
 
+if (environment !== "development" && process.env.GITHUB_REF_NAME !== "develop") {
+  throw new Error(`Cannot deploy git ref ${process.env.GITHUB_REF_NAME} to ${environment}`);
+}
+
 const getDomainName = (): string => {
   switch (environment) {
     case 'production': return 'infra-test.jbrunton-do.com';

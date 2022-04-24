@@ -52,7 +52,9 @@ const getDomainName = (): string => {
   switch (environment) {
     case 'production': return 'infra-test.jbrunton-do.com';
     case 'staging': return 'infra-test.staging.jbrunton-do.com';
-    case 'development': return `${stackName}.infra-test.dev.jbrunton-do.com`;
+    default: return stackName === 'dev'
+      ? 'infra-test.dev.jbrunton-do.com'
+      : `${stackName}.infra-test.dev.jbrunton-do.com`;
   }
 };
 

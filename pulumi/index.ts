@@ -38,8 +38,8 @@ const getEnvironment = (): Environment => {
   switch (stackName) {
     case 'production': return 'production';
     case 'staging': return 'staging';
+    default: return 'development';
   }
-  return 'development';
 }
 
 const environment = getEnvironment();
@@ -59,6 +59,8 @@ const getDomainName = (): string => {
 };
 
 const domainName = getDomainName();
+
+pulumi.log.info(`environment config: environment=${environment}, domain=${domainName}`);
 
 const readManifest = (): VersionManifest => {
   pulumi.log.info(`Reading manifest for environment: ${environment}`);

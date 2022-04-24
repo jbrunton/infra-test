@@ -38,8 +38,8 @@ const getEnvironment = (): Environment => {
   switch (stackName) {
     case 'production': return 'production';
     case 'staging': return 'staging';
+    default: return 'development';
   }
-  return 'development';
 }
 
 const environment = getEnvironment();
@@ -52,11 +52,15 @@ const getDomainName = (): string => {
   switch (environment) {
     case 'production': return 'infra-test.jbrunton-do.com';
     case 'staging': return 'infra-test.staging.jbrunton-do.com';
-    case 'development': return `${stackName}.infra-test.dev.jbrunton-do.com`;
+    default: return stackName === 'dev'
+      ? 'infra-test.dev.jbrunton-do.com'
+      : `${stackName}.infra-test.dev.jbrunton-do.com`;
   }
 };
 
 const domainName = getDomainName();
+
+pulumi.log.info(`environment config: environment=${environment}, domain=${domainName}`);
 
 const readManifest = (): VersionManifest => {
   pulumi.log.info(`Reading manifest for environment: ${environment}`);

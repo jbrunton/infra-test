@@ -1,6 +1,6 @@
 services:
   api:
-    version: "1.0"
+    version: "latest"
     instanceCount: 1
     instanceSizeSlug: basic-xxs
     jobs:
@@ -9,7 +9,7 @@ services:
         instanceSizeSlug: basic-xxs
         runCommand: npx knex migrate:latest
   web:
-    version: "2.0"
+    version: "latest"
     instanceCount: 1
     instanceSizeSlug: basic-xxs
 jobs:
